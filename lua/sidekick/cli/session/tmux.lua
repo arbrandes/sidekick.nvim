@@ -79,6 +79,9 @@ function M:add_cmd(ret)
       vim.list_extend(ret, { "-e", ("%s=%s"):format(key, tostring(value)) })
     end
   end
+  if Config.cli.mux.direnv and vim.fn.executable("direnv") == 1 then
+    vim.list_extend(ret, { "direnv", "exec", self.cwd })
+  end
   vim.list_extend(ret, self.tool.cmd)
 end
 
@@ -186,6 +189,14 @@ end
 ---Send text to a tmux pane
 function M:submit()
   Util.exec({ "tmux", "send-keys", "-t", self.tmux_pane_id, "Enter" })
+end
+
+---Focus the tmux pane (select it as the active pane)
+function M:focus()
+  local pane_id = self:pane_id()
+  if pane_id then
+    Util.exec({ "tmux", "select-pane", "-t", pane_id })
+  end
 end
 
 function M:dump()
